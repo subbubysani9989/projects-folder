@@ -1,0 +1,55 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Job 1: Run Continuous Integration (CI) Tests
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Execute automated application tests
+        run: npm test
+
+  # Job 2: Run Continuous Deployment (CD) to Production
+  deploy-to-production:
+    needs: build-and-test  # Strict dependency: Only deploys if testing passes successfully
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Setup GitHub Pages hosting configuration
+        uses: actions/configure-pages@v4
+
+      - name: Bundle web assets for upload
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.' # Upload root directory containing index.html
+
+      - name: Deploy assets to GitHub Pages cloud hosting
+        id: deployment
+        uses: actions/deploy-pages@v4
