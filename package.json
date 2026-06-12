@@ -1,0 +1,7 @@
+{
+  "name": "github-actions-html-app",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node test-validator.js"
+  }
+}
